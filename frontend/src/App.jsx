@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import "./App.css";
 
-const API_URL = "http://localhost:5000/api/items";
+const API_URL = "https://mern-item-manager-17rb.onrender.com";
 
 function App() {
   const [items, setItems] = useState([]);
