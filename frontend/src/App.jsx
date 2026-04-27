@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import "./App.css";
 
-const API_URL = "https://mern-item-manager-17rb.onrender.com";
+const API_URL = "https://mern-item-manager-17rb.onrender.com/api/items";
 
 function App() {
   const [items, setItems] = useState([]);
@@ -31,7 +31,17 @@ function App() {
     setIsLoading(true);
     try {
       const res = await axios.get(API_URL);
-      setItems(res.data);
+      const normalizedItems = Array.isArray(res.data)
+        ? res.data
+        : Array.isArray(res.data?.items)
+          ? res.data.items
+          : [];
+
+      if (!Array.isArray(res.data) && !Array.isArray(res.data?.items)) {
+        setFlashMessage("error", "Unexpected API response format.");
+      }
+
+      setItems(normalizedItems);
     } catch (error) {
       setFlashMessage("error", "Could not load items. Check backend connection.");
       console.log("Error fetching items:", error);
@@ -120,14 +130,17 @@ function App() {
   };
 
   const categories = useMemo(() => {
+    const safeItems = Array.isArray(items) ? items : [];
+
     return [
       "all",
-      ...new Set(items.map((item) => item.category?.trim()).filter(Boolean)),
+      ...new Set(safeItems.map((item) => item.category?.trim()).filter(Boolean)),
     ];
   }, [items]);
 
   const visibleItems = useMemo(() => {
-    let nextItems = [...items];
+    const safeItems = Array.isArray(items) ? items : [];
+    let nextItems = [...safeItems];
 
     if (query.trim()) {
       const keyword = query.toLowerCase();
